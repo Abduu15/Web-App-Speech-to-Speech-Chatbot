@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+azure-cognitiveservices-speech
+openai==0.28
+jinja2

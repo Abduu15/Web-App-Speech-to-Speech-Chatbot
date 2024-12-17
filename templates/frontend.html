@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech-to-Speech Chatbot</title>
+    <script>
+        let socket;
+
+        // Funktion zum Abspielen eines Tons
+        function playStartSound() {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            oscillator.type = "sine";
+            oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // A4-Ton
+            oscillator.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.2);
+        }
+
+        // Starten des Recordings
+        function startRecording() {
+            playStartSound(); // Spiele den Ton ab
+            const output = document.getElementById("output");
+            //output.innerHTML = "Recording started...";
+
+            // WebSocket-Verbindung aufbauen
+            socket = new WebSocket("ws://127.0.0.1:8000/ws/recording");
+
+            // Nachrichten vom Server empfangen
+            socket.onmessage = function (event) {
+                const message = event.data;
+                output.innerHTML += "<br>" + message;
+
+                if (message.includes("Recording stopped.")) {
+                    socket.close();
+                }
+            };
+
+            // Fehlerbehandlung
+            socket.onerror = function (error) {
+                console.error("WebSocket Error: ", error);
+                output.innerHTML += "<br>Error occurred. Check console.";
+            };
+        }
+    </script>
+</head>
+<body>
+    <h1>Speech-to-Speech Chatbot</h1>
+    <button onclick="startRecording()">Start Recording</button>
+    <div id="output" style="margin-top: 20px; font-size: 1.2em;"></div>
+</body>
+</html>
